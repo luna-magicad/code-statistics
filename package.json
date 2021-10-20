@@ -1,0 +1,49 @@
+{
+  "name": "Luna-electron-code-statistics",
+  "version": "0.1.0",
+  "description": "Checks folder for statistics about code.",
+  "main": "main.js",
+  "scripts": {
+    "build": "npm run build-ts-system && npm run build-ts-client && npm run build-copy-html",
+    "build-prod": "npm run build && npm run clean-production",
+
+    "build-ts-client": "tsc --project src/client/tsconfig.client.json",
+    "build-ts-client-watch": "tsc --project src/client/tsconfig.client.json -w",
+
+    "build-ts-system": "tsc --project tsconfig.system.json",
+    "build-ts-system-watch": "tsc --project tsconfig.system.json -w",
+    "build-ts-watch": "npm run build-ts-system-watch && npm run build-ts-client-watch",
+
+    "build-copy-html": "node build-copy-html.js",
+    "build-copy-html-watch": "node watch-copy-html.js",
+
+    "clean-production": "node clean-production.js",
+    "start": "npm run build && npm run start-electron",
+    "start-electron": "electron ./build/main.js",
+    "dist": "npm run build-prod && electron-builder"
+  },
+  "keywords": [],
+  "author": "Luna",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^13.1.6",
+    "electron-builder": "^22.11.7",
+    "typescript": "^4.3.5"
+  },
+  "build": {
+    "asar": false,
+    "appId": "luna.electron.app",
+    "directories": {
+      "buildResources": "src/assets",
+      "output": "dist"
+    },
+    "files": [
+      {
+        "from": "build"
+      }
+    ],
+    "win": {
+      "target": "zip"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+  <title>Code statistics something something.</title>
+
+</head>
+<body>
+  <h1>Tiggy will check your folders and find statistics about your project's code.</h1>
+  <div>
+    <file-types-selector></file-types-selector>
+    <project-selector></project-selector>
+  </div>
+  <div>
+    <statistics-results></statistics-results>
+  </div>
+  <script src="client/app.js" type="module"></script>
+</body>
+</html>
