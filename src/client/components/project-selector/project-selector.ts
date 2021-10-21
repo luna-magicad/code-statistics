@@ -4,7 +4,7 @@ import { PathsChangeEvent } from './paths-change-event';
 
 export class ProjectSelector extends HTMLElement {
   includedPaths: string[] = [];
-  excludedPaths: string[] = ['node_modules', 'bin', 'obj'];
+  excludedPaths: string[] = ['node_modules', 'bin', 'obj', 'dist', 'build'];
 
   constructor() {
     super();
