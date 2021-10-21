@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const path = require('path');
 
 // Custom "preprocessor" to remove code with node.
@@ -12,6 +12,17 @@ magiReloadElectron('build');
 
 const rootNodePath = __dirname;
 
+ipcMain.on('openFileExplorer', (event: any) => {
+  let selection: string | undefined;
+  try {
+    selection = dialog.showOpenDialogSync({
+      properties: ['openDirectory'],
+    });
+  } finally {
+    event.reply('selectedDirectory', selection);
+  }
+});
+
 // Most of this code comes from the introduction tutorial at https://www.electronjs.org/docs/tutorial/quick-start.
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -19,7 +30,6 @@ function createWindow(): void {
     height: 600,
     webPreferences: {
       preload: path.join(rootNodePath, 'preload.js'),
-      nodeIntegration: true,
     },
   });
 

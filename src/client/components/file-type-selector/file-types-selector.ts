@@ -18,14 +18,10 @@ export class FileTypesSelector extends HTMLElement {
     this.initDOM();
   }
 
-  connectedCallback(): void {
-    console.log('I was added to the main page');
-  }
-
-  initStyle(): void {
+  addStyle(): void {
     const style = document.createElement('style');
     style.textContent = `
-.selected-extensions {
+.extensions {
   display: flex;
   flex-wrap: wrap;
 }
@@ -34,34 +30,46 @@ export class FileTypesSelector extends HTMLElement {
     this.shadowRoot!.append(style);
   }
 
-  initDOM(): void {
-    this.attachShadow({ mode: 'open' });
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'file-type-selector';
-    wrapper.innerHTML = `
-<h3>File extension selections</h3>
+  private getContainerHTML(): string {
+    return `
+<h3 style="margin: 5px 0;">File type selections</h3>
 <label>
   <input type="text" name="file-extension" placeholder="File extension">
 </label>
 <br>
-<div class="selected-extensions"></div>
+<div class="extensions" style="margin-top: 5px;"></div>
     `;
+  }
 
-    const fileExtensionsAddElement = wrapper.querySelector<HTMLInputElement>('input[name=file-extension]');
+  private getExtensionHTML(extension: string): string {
+    return `
+<label>
+  <input type="checkbox"><span>${extension}</span>
+</label>
+      `;
+  }
+
+  initDOM(): void {
+    this.attachShadow({ mode: 'open' });
+
+    const container = document.createElement('div');
+    container.className = 'file-type-selector';
+    container.innerHTML = this.getContainerHTML();
+
+    const fileExtensionsAddElement = container.querySelector<HTMLInputElement>('input[name=file-extension]');
     fileExtensionsAddElement!.addEventListener('blur', (event) => {
       this.addFileExtension(fileExtensionsAddElement!.value);
       fileExtensionsAddElement!.value = '';
     });
 
-    this.renderSelectedExtensions(wrapper);
+    this.renderSelectedExtensions(container);
 
-    this.initStyle();
-    this.shadowRoot!.appendChild(wrapper);
+    this.addStyle();
+    this.shadowRoot!.appendChild(container);
   }
 
-  renderSelectedExtensions(queryElement: HTMLElement | ShadowRoot): void {
-    const extensionsElement = queryElement!.querySelector<HTMLDivElement>('.selected-extensions');
+  private renderSelectedExtensions(queryElement: HTMLElement | ShadowRoot): void {
+    const extensionsElement = queryElement!.querySelector<HTMLDivElement>('.extensions');
     if (!extensionsElement) {
       return;
     }
@@ -72,11 +80,7 @@ export class FileTypesSelector extends HTMLElement {
 
     for (const extension of this.fileExtensions) {
       const extensionElement = document.createElement('div');
-      extensionElement.innerHTML = `
-<label>
-  <input type="checkbox"><span>${extension.extension}</span>
-</label>
-      `;
+      extensionElement.innerHTML = this.getExtensionHTML(extension.extension);
 
       // Set up the checkbox element
       const checkboxElement = extensionElement.querySelector('input');
@@ -91,7 +95,7 @@ export class FileTypesSelector extends HTMLElement {
     extensionsElement.appendChild(fragment);
   }
 
-  addFileExtension(extension: string): void {
+  private addFileExtension(extension: string): void {
     if (!extension || this.fileExtensions.find(e => e.extension === extension)) {
       return;
     }

@@ -3,14 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'">
+  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'">
   <title>Code statistics something something.</title>
 
+  <style>
+    h1 {
+      margin: 0;
+    }
+  </style>
 </head>
 <body>
-  <h1>Tiggy will check your folders and find statistics about your project's code.</h1>
-  <div>
+  <h1 style="font-size: 1.5em;">Tiggy will check your folders and find statistics about your project's code.</h1>
+  <div style="display: grid; grid-template-columns: 1fr 2fr; grid-gap: 5px;">
     <file-types-selector></file-types-selector>
     <project-selector></project-selector>
   </div>
