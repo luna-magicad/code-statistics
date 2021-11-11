@@ -12,7 +12,7 @@
 
     "build-ts-system": "tsc --project tsconfig.system.json",
     "build-ts-system-watch": "tsc --project tsconfig.system.json -w",
-    "build-ts-watch": "npm run build-ts-system-watch && npm run build-ts-client-watch",
+    "build-ts-watch": "start npm run build-ts-system-watch && start npm run build-ts-client-watch",
 
     "build-copy-html": "node build-copy-html.js",
     "build-copy-html-watch": "node watch-copy-html.js",

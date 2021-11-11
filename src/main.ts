@@ -1,5 +1,6 @@
-const { app, BrowserWindow, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const { setupApi } = require('./system/api/setup-api');
 
 // Custom "preprocessor" to remove code with node.
 // #if debug
@@ -12,16 +13,7 @@ magiReloadElectron('build');
 
 const rootNodePath = __dirname;
 
-ipcMain.on('openFileExplorer', (event: any) => {
-  let selection: string | undefined;
-  try {
-    selection = dialog.showOpenDialogSync({
-      properties: ['openDirectory'],
-    });
-  } finally {
-    event.reply('selectedDirectory', selection);
-  }
-});
+setupApi();
 
 // Most of this code comes from the introduction tutorial at https://www.electronjs.org/docs/tutorial/quick-start.
 function createWindow(): void {

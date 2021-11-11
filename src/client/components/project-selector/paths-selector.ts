@@ -17,11 +17,33 @@ export class PathsSelector extends HTMLElement {
     this.initDOM();
   }
 
+  private addStyle(): void {
+
+    const style = document.createElement('style');
+    style.textContent = `
+h4 {
+  margin: 5px 0;
+}
+    
+.paths {
+  margin: 5px 0; 
+  padding: 0 5px;
+  word-break: break-word; 
+}
+
+.paths li {
+  margin-left: 15px;
+}
+    `;
+
+    this.shadowRoot!.append(style);
+  }
+
   private getContainerHTML(header: string): string {
     return `
-<h4 style="margin: 5px 0;">${header} <button class="open-directory">Directory</button></h4>
+<h4>${header} <button class="open-directory">Directory</button></h4>
 <input name="custom-input" type="text">
-<ul class="paths" style="margin: 5px 0; word-break: break-word; padding: 0 5px;">Some paths here.</ul>
+<ul class="paths" style="">Some paths here.</ul>
     `;
   }
 
@@ -42,6 +64,7 @@ export class PathsSelector extends HTMLElement {
 
     this.renderPaths(container);
 
+    this.addStyle();
     this.shadowRoot!.appendChild(container);
   }
 
@@ -68,12 +91,19 @@ export class PathsSelector extends HTMLElement {
     (<any>window).api.openFileExplorer(boundCallback);
   }
 
-  public onSelectedDirectory(selection: string | undefined): void {
-    if (!selection || this.paths.includes(selection)) {
+  public onSelectedDirectory(selections: string[] | undefined): void {
+    if (!selections?.length) {
       return;
     }
 
-    this._paths.push(selection);
+    for (const selection of selections) {
+      if (!selection || this.paths.includes(selection)) {
+        continue;
+      }
+
+      this._paths.push(selection);
+    }
+
     this.renderPaths(this.shadowRoot!);
   }
 
