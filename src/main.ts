@@ -6,7 +6,7 @@ const { setupApi } = require('./system/api/setup-api');
 // #if debug
 const watchCopyHtml = require('../watch-copy-html');
 const magiReloadElectron = require('../magi-reload-electron');
-// These paths is from root of the app.
+// These paths are from root of the app.
 watchCopyHtml('src', 'build');
 magiReloadElectron('build');
 // #endif debug

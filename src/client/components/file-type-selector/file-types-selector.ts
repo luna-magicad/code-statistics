@@ -10,6 +10,7 @@ export class FileTypesSelector extends HTMLElement {
     { extension: 'scss', active: true, },
     { extension: 'js', active: true, },
     { extension: 'cs', active: true, },
+    { extension: 'html', active: true },
   ];
 
   constructor() {

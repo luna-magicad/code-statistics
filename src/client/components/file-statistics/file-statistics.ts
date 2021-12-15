@@ -1,13 +1,17 @@
 import './file-statistics-results.js';
 import { FileStatisticsAnalysingStatus } from './file-statistics-analysing-status.js';
+import type { FileStatisticsResults } from './file-statistics-results';
 import type { AnalyzeRequestDataEvent } from './analyze-request-data-event';
 import type { AnalyzeRequestDataFetchedEvent } from './analyze-request-data-fetched-event';
+import type { AnalysisResult } from '../../../shared/models/analysis-result';
 
 export class FileStatistics extends HTMLElement {
   startAnalyzeButton!: HTMLButtonElement;
   analyzingMessage!: HTMLElement;
 
-  private readonly boundOnAnalysisStatusUpdate: (status: FileStatisticsAnalysingStatus, message: string) => void;
+  fileStatisticsResults!: FileStatisticsResults;
+
+  private readonly boundOnAnalysisStatusUpdate: (status: FileStatisticsAnalysingStatus, message: string, data?: AnalysisResult) => void;
 
   constructor() {
     super();
@@ -37,6 +41,7 @@ export class FileStatistics extends HTMLElement {
 <div>
   <button class="start-analyze">Analyze</button>
   <div class="analyzing-message"></div>
+  <file-statistics-results></file-statistics-results>
 </div>
     `;
   }
@@ -50,6 +55,7 @@ export class FileStatistics extends HTMLElement {
 
     this.startAnalyzeButton = container.querySelector<HTMLButtonElement>('.start-analyze')!;
     this.analyzingMessage = container.querySelector<HTMLDivElement>('.analyzing-message')!;
+    this.fileStatisticsResults = container.querySelector<FileStatisticsResults>('file-statistics-results')!;
     this.initAnalyzeButton();
 
     this.addStyle();
@@ -65,10 +71,11 @@ export class FileStatistics extends HTMLElement {
   private initEvents(): void {
   }
 
-  private onAnalysisStatusUpdate(status: FileStatisticsAnalysingStatus, message: string): void {
+  private onAnalysisStatusUpdate(status: FileStatisticsAnalysingStatus, message: string, data?: AnalysisResult): void {
     this.addAnalyzingMessage(message, status === FileStatisticsAnalysingStatus.Error);
 
     if (status === FileStatisticsAnalysingStatus.Done) {
+      this.fileStatisticsResults.result = data;
       this.startAnalyzeButton.disabled = false;
     }
   }

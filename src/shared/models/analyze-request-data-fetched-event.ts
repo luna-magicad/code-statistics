@@ -1,5 +1,14 @@
 export interface AnalyzeRequestDataFetchedEvent {
-  fileTypes: string[];      // ts, js, css ...
-  includedPaths: string[];  // C://...
-  excludedPaths: string[];  // node_modules
+  /**
+   * @example ts, js, css ...
+   */
+  fileTypes: string[];
+  /**
+   * @example C://...
+   */
+  includedPaths: string[];
+  /**
+   * @example node_modules
+   */
+  excludedPaths: string[];
 }

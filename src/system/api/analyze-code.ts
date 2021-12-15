@@ -1,25 +1,76 @@
+import type { AnalysisResult } from '../../shared/models/analysis-result';
+import type { Stats } from 'fs';
+import type { AnalyzeRequestDataFetchedEvent } from '../../shared/models/analyze-request-data-fetched-event';
+import type { FailedAnalysis } from '../../shared/models/failed-analysis';
+import type { AnalysisFileResult } from '../../shared/models/analysis-file-result';
+
 const { ipcMain } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
-import type { Stats } from 'fs';
-import type { AnalyzeRequestDataFetchedEvent } from '../../shared/models/analyze-request-data-fetched-event';
+interface FilesByExtension {
+  [filetype: string]: string[];
+}
 
 type FilepathStatTuple = [absolutepath: string, extension: string, stats: Stats];
 
-
 async function doAnalysis(event: any, data: AnalyzeRequestDataFetchedEvent): Promise<void> {
+  let result: AnalysisResult | undefined;
   try {
-    const files = await getFiles(data.includedPaths, data.excludedPaths, data.fileTypes);
-    console.log('all ze files', files);
+    const filesByExtension = await getFiles(data.includedPaths, data.excludedPaths, data.fileTypes);
+    result = await analyzeAllFiles(filesByExtension, event);
   } catch (e) {
     event.reply('analysisError', `An unexpected error occurred: ${e}`);
   }
-
-  event.reply('analysisDone', 'Analysis done.');
+  event.reply('analysisDone', 'Analysis done.', result);
 }
 
-async function getFiles(includePaths: string[], excludedPaths: string[], fileTypes: string[]): Promise<Record<string, string[]>> {
+async function analyzeAllFiles(filesbyExtension: FilesByExtension, event: any): Promise<AnalysisResult> {
+  const analysisResults: Record<string, AnalysisFileResult[]> = {};
+  const failedAnalysises: FailedAnalysis[] = [];
+  const allPromises: Promise<unknown>[] = [];
+
+  for (const extension of Object.keys(filesbyExtension)) {
+    const files = filesbyExtension[extension];
+    for (const file of files) {
+      allPromises.push(
+        analyzeFile(file, extension).then(result => {
+          if (!analysisResults[extension]) {
+            analysisResults[extension] = [];
+          }
+          analysisResults[extension].push(result);
+        }).catch((error) => {
+          failedAnalysises.push({
+            file,
+            extension,
+            error,
+          });
+        }),
+      );
+    }
+  }
+
+  await Promise.allSettled(allPromises);
+
+  return {
+    results: analysisResults,
+    failed: failedAnalysises,
+  };
+}
+
+async function analyzeFile(path: string, extension: string): Promise<AnalysisFileResult> {
+  const result = await fs.promises.readFile(path, { encoding: 'utf8' });
+  const lines = result.split(/\r\n|\r|\n/).length;
+
+  return {
+    file: path,
+    characters: result.length,
+    lines,
+    fileExtension: extension,
+  }
+}
+
+async function getFiles(includePaths: string[], excludedPaths: string[], fileTypes: string[]): Promise<FilesByExtension> {
   if (!includePaths.length || !fileTypes.length) {
     return {};
   }
