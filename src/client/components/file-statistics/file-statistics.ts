@@ -2,8 +2,8 @@ import './file-statistics-results.js';
 import { FileStatisticsAnalysingStatus } from './file-statistics-analysing-status.js';
 import type { FileStatisticsResults } from './file-statistics-results';
 import type { AnalyzeRequestDataEvent } from './analyze-request-data-event';
-import type { AnalyzeRequestDataFetchedEvent } from './analyze-request-data-fetched-event';
-import type { AnalysisResult } from '../../../shared/models/analysis-result';
+import type { AnalyzeResponseDone } from './analyze-response-done';
+import type { AnalyzeRequestDataFetchedEvent } from '../../../shared/models/analyze-request-data-fetched-event';
 
 export class FileStatistics extends HTMLElement {
   startAnalyzeButton!: HTMLButtonElement;
@@ -11,7 +11,7 @@ export class FileStatistics extends HTMLElement {
 
   fileStatisticsResults!: FileStatisticsResults;
 
-  private readonly boundOnAnalysisStatusUpdate: (status: FileStatisticsAnalysingStatus, message: string, data?: AnalysisResult) => void;
+  private readonly boundOnAnalysisStatusUpdate: (status: FileStatisticsAnalysingStatus, message: string, data?: AnalyzeResponseDone) => void;
 
   constructor() {
     super();
@@ -71,11 +71,12 @@ export class FileStatistics extends HTMLElement {
   private initEvents(): void {
   }
 
-  private onAnalysisStatusUpdate(status: FileStatisticsAnalysingStatus, message: string, data?: AnalysisResult): void {
+  private onAnalysisStatusUpdate(status: FileStatisticsAnalysingStatus, message: string, response?: AnalyzeResponseDone): void {
     this.addAnalyzingMessage(message, status === FileStatisticsAnalysingStatus.Error);
 
     if (status === FileStatisticsAnalysingStatus.Done) {
-      this.fileStatisticsResults.result = data;
+
+      this.fileStatisticsResults.setResponse(response);
       this.startAnalyzeButton.disabled = false;
     }
   }

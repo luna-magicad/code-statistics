@@ -108,11 +108,9 @@ function getFilesForDirectory(rootpath: string, excludedPaths: string[], fileTyp
       }
 
       const absolutepath = path.join(rootpath, file);
+      // const parsedPath = path.parse(absolutepath);
       // Extension can be undefined if the path is a directory.
-      const extension = path.parse(absolutepath)?.ext.toLowerCase() || '';
-      if ((file[0] == '.' || extension) && !fileTypes.includes(extension)) {
-        continue;
-      }
+      let extension = getExtension(absolutepath, fileTypes);
 
       const filePromise = new Promise<FilepathStatTuple>((res, rej) => {
         fs.promises.lstat(absolutepath)
@@ -135,7 +133,9 @@ function getFilesForDirectory(rootpath: string, excludedPaths: string[], fileTyp
     for (const [absolutepath, extension, stats] of pathStats) {
       if (stats.isDirectory()) {
         directoryPromises.push(getFilesForDirectory(absolutepath, excludedPaths, fileTypes, result));
-      } else if (stats.isFile()) {
+      // The extension of a folder is '' so they are included but for file that's not allowed!
+      // Well it could be allowed but for now it's not!
+      } else if (stats.isFile() && extension) {
         let extensionResults = result[extension];
         if (!extensionResults) {
           extensionResults = [];
@@ -150,6 +150,19 @@ function getFilesForDirectory(rootpath: string, excludedPaths: string[], fileTyp
   });
 
   return promise;
+}
+
+/**
+ * @example C://somepath/deeper/test.spec.ts
+ */
+function getExtension(absolutePath: string, fileTypes: string[]): string {
+  for (const fileType of fileTypes) {
+    if (absolutePath.endsWith(fileType)) {
+      return fileType;
+    }
+  }
+
+  return '';
 }
 
 exports.setupAnalyzeCode = function(): void {

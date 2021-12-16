@@ -11,6 +11,7 @@ export class FileTypesSelector extends HTMLElement {
     { extension: 'js', active: true, },
     { extension: 'cs', active: true, },
     { extension: 'html', active: true },
+    { extension: 'spec.ts', active: false },
   ];
 
   constructor() {

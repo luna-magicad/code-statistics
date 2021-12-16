@@ -1,7 +1,7 @@
 import type { FileStatistics } from './file-statistics';
 import type { FileTypesSelector } from '../file-type-selector/file-types-selector';
 import type { ProjectSelector } from '../project-selector/project-selector';
-import type { AnalyzeRequestDataFetchedEvent } from './analyze-request-data-fetched-event';
+import type { AnalyzeRequestDataFetchedEvent } from '../../../shared/models/analyze-request-data-fetched-event';
 
 export function initAnalyzeRequests(fileStatistics: FileStatistics, fileTypesSelector: FileTypesSelector, projectSelector: ProjectSelector): void {
   fileStatistics.addEventListener('analyzeRequestData', () => {

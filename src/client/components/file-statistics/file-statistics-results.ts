@@ -1,18 +1,14 @@
 import type { AnalysisResult } from '../../../shared/models/analysis-result';
+import type { AnalyzeResponseDone } from './analyze-response-done';
 
 export class FileStatisticsResults extends HTMLElement {
   private resultsContainer!: HTMLElement;
 
   private hasSetResult: boolean = false;
 
-  private _result: AnalysisResult | undefined;
-  set result(value: AnalysisResult | undefined) {
-    this.hasSetResult = true;
-    this.shadowRoot!.querySelector<HTMLHeadElement>('h3')!.style.display = '';
+  private includedPaths: string[] | undefined = [];
+  private result: AnalysisResult | undefined;
 
-    this._result = value;
-    this.updateResults();
-  };
 
   constructor() {
     super();
@@ -54,11 +50,22 @@ export class FileStatisticsResults extends HTMLElement {
     this.shadowRoot!.appendChild(container);
   }
 
+  setResponse(value: AnalyzeResponseDone | undefined) {
+    this.hasSetResult = true;
+    this.shadowRoot!.querySelector<HTMLHeadElement>('h3')!.style.display = '';
+
+    this.includedPaths = value?.request.includedPaths;
+    this.result = value?.data;
+    this.updateResults();
+  };
+
   private updateResults(): void {
     this.clearView();
-    if (!this._result) {
+    if (!this.result || !this.includedPaths?.length) {
       return;
     }
+
+    this.includedPaths.sort((a, b) => b.length - a.length);
 
     const documentFragment = document.createDocumentFragment();
 
@@ -79,7 +86,7 @@ export class FileStatisticsResults extends HTMLElement {
     const errors = document.createElement('errors');
     errors.className = 'errors';
 
-    for (const failed of this._result!.failed) {
+    for (const failed of this.result!.failed) {
       const element = document.createElement('div');
       element.innerHTML = `${failed.file} - ${failed.error}`;
     }
@@ -88,7 +95,7 @@ export class FileStatisticsResults extends HTMLElement {
 
   private addResults(): HTMLElement {
     const results = document.createElement('div');
-    for (const fileExtension of Object.keys(this._result!.results)) {
+    for (const fileExtension of Object.keys(this.result!.results)) {
       const extensionElement = this.addExtension(fileExtension);
       results.appendChild(extensionElement);
     }
@@ -99,7 +106,16 @@ export class FileStatisticsResults extends HTMLElement {
   private addExtension(fileExtension: string): HTMLElement {
     const container = document.createElement('div');
     container.className = 'file-results';
-    const fileResults = this._result!.results[fileExtension];
+    const fileResults = this.result!.results[fileExtension];
+
+    fileResults.sort((a, b) => {
+      const sortByLines = b.lines - a.lines;
+      if (sortByLines !== 0) {
+        return sortByLines;
+      }
+
+      return b.characters - a.characters;
+    });
 
     let totalCharacters = 0;
     let totalLines = 0;
@@ -113,7 +129,7 @@ export class FileStatisticsResults extends HTMLElement {
   <summary>File details</summary>
   <table>
     <thead>
-      <tr><td>Characters</td><td>Lines</td><td>file</td></tr>
+      <tr><td>Lines</td><td>Characters</td><td>file</td></tr>
     </thead>
     <tbody></tbody>
 </table>
@@ -127,18 +143,30 @@ export class FileStatisticsResults extends HTMLElement {
       totalCharacters += fileResult.characters;
       totalLines += fileResult.lines;
 
-      fileResultElement.innerHTML = `<td class="characters">characters: ${fileResult.characters},</td><td class="lines"> lines: ${fileResult.lines}</td><td>${fileResult.file}</td>`;
+      const shortenedFileName = this.getShortenedFilename(fileResult.file);
+
+      fileResultElement.innerHTML = `<td class="lines">lines: ${fileResult.lines},</td><td class="characters"> characters: ${fileResult.characters}</td><td>${shortenedFileName}</td>`;
       fileResultElement.title = fileResult.file;
       tbody.appendChild(fileResultElement);
     }
 
     const summaryElement = document.createElement('div');
-    summaryElement.innerHTML = `<strong>${fileExtension}</strong> - total characters: ${totalCharacters}, total lines: ${totalLines}`;
+    summaryElement.innerHTML = `<strong>${fileExtension}</strong> - total files: ${fileResults.length}, - total lines: ${totalLines}, - total characters: ${totalCharacters}`;
 
     container.appendChild(summaryElement);
     container.appendChild(resultsFragment);
 
     return container;
+  }
+
+  private getShortenedFilename(file: string): string {
+    for (const includePath of this.includedPaths!) {
+      if (file.startsWith(includePath)) {
+        return file.substring(includePath.length);
+      }
+    }
+
+    return file;
   }
 }
 
